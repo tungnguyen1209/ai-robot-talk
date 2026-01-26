@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# Environment Variables
+.env
+
+# Distribution / Packaging
+build/
+dist/
+*.egg-info/
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# AI Robot Project specific
+response.mp3
+models.txt
+verify_brain.py
+list_models.py
+list_models_to_file.py
