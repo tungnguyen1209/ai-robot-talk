@@ -4,7 +4,7 @@ Một ứng dụng robot AI đơn giản có khả năng giao tiếp 2 chiều (
 
 ## Tính năng
 - **Nghe (STT)**: Sử dụng Google Speech Recognition để chuyển giọng nói thành văn bản.
-- **Suy nghĩ (Brain)**: Sử dụng Google Gemini (LLM) để xử lý hội thoại thông minh, thân thiện.
+- **Suy nghĩ (Brain)**: Sử dụng **Local AI (Ollama)** để xử lý hội thoại offline trên máy tính, bảo mật và nhanh chóng.
 - **Nói (TTS)**: Sử dụng Microsoft Edge TTS để tạo giọng đọc tự nhiên.
 
 ## Cài đặt
@@ -15,20 +15,18 @@ Một ứng dụng robot AI đơn giản có khả năng giao tiếp 2 chiều (
     cd ai-robot-talk
     ```
 
-2.  **Cài đặt thư viện**:
+2.  **Cài đặt Ollama (Local AI)**:
+    - Tải và cài đặt [Ollama](https://ollama.com/)
+    - Mở terminal và tải model khuyến nghị (nhẹ, thông minh, hỗ trợ tiếng Việt tốt):
+    ```powershell
+    ollama pull qwen2.5:3b
+    ```
+
+3.  **Cài đặt thư viện Python**:
     Yêu cầu Python 3.10 trở lên.
     ```bash
     pip install -r requirements.txt
     ```
-    *Lưu ý: Nếu gặp lỗi cài đặt PyAudio trên Windows, hãy tìm file .whl phù hợp hoặc cài đặt các công cụ build của Microsoft Visual C++.*
-
-3.  **Cấu hình API Key**:
-    - Tạo file `.env` từ file mẫu (nếu chưa có).
-    - Lấy API Key miễn phí tại [Google AI Studio](https://aistudio.google.com/).
-    - Thêm vào file `.env`:
-        ```text
-        GEMINI_API_KEY=AIzaSy...
-        ```
 
 ## Hướng dẫn sử dụng
 
