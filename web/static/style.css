@@ -1,0 +1,159 @@
+:root {
+    --bg-color: #1a1a2e;
+    --robot-color: #e94560;
+    --face-color: #fce4ec;
+    --eye-color: #1a1a2e;
+}
+
+body {
+    background-color: var(--bg-color);
+    font-family: 'Outfit', sans-serif;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+    width: 600px;
+}
+
+.robot-face {
+    width: 200px;
+    height: 200px;
+    background-color: var(--face-color);
+    border-radius: 40px;
+    position: relative;
+    margin: 0 auto 30px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+}
+
+.eye {
+    width: 30px;
+    height: 40px;
+    background-color: var(--eye-color);
+    border-radius: 50%;
+    position: absolute;
+    top: 60px;
+    transition: all 0.3s ease;
+}
+
+.eye.left {
+    left: 50px;
+}
+
+.eye.right {
+    right: 50px;
+}
+
+.mouth {
+    width: 60px;
+    height: 10px;
+    background-color: var(--eye-color);
+    border-radius: 10px;
+    position: absolute;
+    bottom: 50px;
+    left: 70px;
+    transition: all 0.3s ease;
+}
+
+/* Expressions */
+.robot-face.happy .mouth {
+    height: 30px;
+    border-radius: 0 0 30px 30px;
+}
+
+.robot-face.happy .eye {
+    height: 15px;
+    /* Squint */
+    top: 70px;
+}
+
+.robot-face.sad .mouth {
+    height: 30px;
+    border-radius: 30px 30px 0 0;
+    bottom: 40px;
+}
+
+.robot-face.sad .eye {
+    transform: rotate(20deg);
+}
+
+.robot-face.surprised .mouth {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    left: 85px;
+}
+
+.robot-face.angry .eye.left {
+    transform: rotate(20deg);
+}
+
+.robot-face.angry .eye.right {
+    transform: rotate(-20deg);
+}
+
+.robot-face.angry .mouth {
+    width: 40px;
+    left: 80px;
+}
+
+.chat-box {
+    background-color: rgba(255, 255, 255, 0.1);
+    height: 200px;
+    border-radius: 10px;
+    padding: 10px;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.chat-box p {
+    margin: 5px 0;
+}
+
+.chat-box .user {
+    color: #4db6ac;
+}
+
+.chat-box .robot {
+    color: #e94560;
+}
+
+.input-group {
+    display: flex;
+    margin-top: 15px;
+    gap: 10px;
+}
+
+.input-group input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    font-family: inherit;
+    font-size: 16px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #333;
+}
+
+.input-group button {
+    padding: 10px 20px;
+    background-color: var(--robot-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    transition: background 0.2s;
+}
+
+.input-group button:hover {
+    background-color: #d13650;
+}
