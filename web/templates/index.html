@@ -7,9 +7,54 @@
     <title>Sumo Robot 🤖</title>
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        #start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 46, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            transition: opacity 0.5s;
+        }
+
+        #start-btn {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
+            transition: transform 0.2s;
+        }
+
+        #start-btn:hover {
+            transform: scale(1.1);
+        }
+    </style>
 </head>
 
 <body>
+    <!-- Start Overlay for Autoplay Policy -->
+    <div id="start-overlay">
+        <div class="robot-face" style="transform: scale(0.8); margin-bottom: 20px;">
+            <div class="eye left"></div>
+            <div class="eye right"></div>
+            <div class="mouth" style="height: 10px; border-radius: 10px;"></div>
+        </div>
+        <button id="start-btn" onclick="startApp()">👋 Bắt đầu trò chuyện</button>
+    </div>
+
     <div class="container">
         <h1>Sumo Robot 🤖</h1>
 
@@ -24,15 +69,13 @@
         </div>
 
         <div class="chat-box" id="chatBox">
-            <div class="message-row robot">
-                <div class="chat-bubble">Xin chào! Mình là Sumo. Bạn muốn nói chuyện gì nào?</div>
-            </div>
+            <!-- Chat history -->
         </div>
 
         <div class="input-group">
             <button id="micBtn" onclick="toggleMic()" title="Nói">🎤</button>
             <input type="text" id="userInput" placeholder="Nhập tin nhắn..." autocomplete="off">
-            <button class="send-btn" onclick="sendMessage()" title="Gửi">➤</button>
+            <button class="send-btn" onclick="handleInput()" title="Gửi">➤</button>
         </div>
     </div>
 
@@ -43,7 +86,7 @@
         const userInput = document.getElementById('userInput');
         const micBtn = document.getElementById('micBtn');
 
-        // Setup Speech Recognition (Browser Built-in)
+        // Setup Speech Recognition
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
         let isListening = false;
@@ -69,8 +112,7 @@
 
             recognition.onresult = (event) => {
                 const text = event.results[0][0].transcript;
-                userInput.value = text;
-                sendMessage(); // Auto send
+                sendMessage(text); // Auto send
             };
 
             recognition.onerror = (event) => {
@@ -80,6 +122,16 @@
             }
         } else {
             micBtn.style.display = 'none';
+        }
+
+        function startApp() {
+            const overlay = document.getElementById('start-overlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                // Trigger welcome greeting (hidden from user chat)
+                sendMessage("Xin chào Sumo, em hãy giới thiệu bản thân ngắn gọn với các bạn nhỏ nhé!", false);
+            }, 500);
         }
 
         function toggleMic() {
@@ -108,17 +160,23 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        async function sendMessage() {
+        function handleInput() {
             const text = userInput.value.trim();
+            if (text) sendMessage(text);
+        }
+
+        async function sendMessage(textInput = null, showUserMessage = true) {
+            const text = textInput || userInput.value.trim();
             if (!text) return;
 
             // UI Update
-            addMessage('user', text);
-            userInput.value = "";
+            if (showUserMessage) {
+                addMessage('user', text);
+                userInput.value = "";
+            }
+
             userInput.disabled = true;
             statusText.innerText = "Sumo đang suy nghĩ...";
-
-            // Add loading indicator (optional)
 
             try {
                 const response = await fetch('/api/chat', {
@@ -152,7 +210,7 @@
             } finally {
                 userInput.disabled = false;
                 statusText.innerText = "Sẵn sàng!";
-                userInput.focus();
+                if (showUserMessage) userInput.focus();
             }
         }
 
@@ -204,7 +262,7 @@
 
         userInput.addEventListener("keypress", function (event) {
             if (event.key === "Enter") {
-                sendMessage();
+                handleInput();
             }
         });
     </script>
