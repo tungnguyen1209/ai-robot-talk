@@ -11,7 +11,10 @@ import tempfile
 import asyncio
 import struct
 from google import genai
+from google import genai
 from google.genai import types
+import requests
+import random
 
 # Import Brain
 from modules.brain import Brain
@@ -33,6 +36,43 @@ def split_emoji(text):
     distinct_emojis = "".join([e['emoji'] for e in emoji_list])
     clean_text = emoji.replace_emoji(text, replace="")
     return clean_text.strip(), distinct_emojis
+
+def search_youtube_kids(query):
+    """
+    Search for kid-friendly videos on YouTube.
+    """
+    api_key = os.environ.get("YOUTUBE_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        print("⚠️ No API Key found for YouTube search (YOUTUBE_API_KEY or GOOGLE_API_KEY)")
+        return None
+        
+    search_url = "https://www.googleapis.com/youtube/v3/search"
+    params = {
+        'part': 'snippet',
+        'q': query,
+        'type': 'video',
+        'videoEmbeddable': 'true',
+        'safeSearch': 'strict',
+        'key': api_key,
+        'maxResults': 5
+    }
+    
+    try:
+        print(f"🔍 Searching YouTube for: {query}")
+        response = requests.get(search_url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        items = data.get('items', [])
+        if items:
+            # Pick a random video from the top results
+            video = random.choice(items)
+            print(f"✅ Found video: {video['snippet']['title']} ({video['id']['videoId']})")
+            return video['id']['videoId']
+    except Exception as e:
+        print(f"❌ YouTube Search Error: {e}")
+        
+    return None
 
 def parse_audio_mime_type(mime_type: str) -> dict[str, int | None]:
     bits_per_sample = 16
@@ -90,8 +130,29 @@ async def chat_endpoint(request: ChatRequest):
     ]
     
     video_id = None
-    if "[VIDEO]" in full_response:
-        video_id = random.choice(SAFE_VIDEOS)
+    video_id = None
+    import re
+    video_match = re.search(r"\[VIDEO:\s*(.*?)\]", full_response, re.IGNORECASE)
+    
+    if video_match:
+        search_query = video_match.group(1).strip()
+        print(f"🔎 Detected video intent. Keyword: '{search_query}'")
+        
+        # Try to search first
+        if search_query:
+            video_id = search_youtube_kids(search_query)
+        else:
+             video_id = search_youtube_kids(user_text) # Fallback to user text
+        
+        # Fallback if no video found or search failed
+        if not video_id:
+             video_id = random.choice(SAFE_VIDEOS)
+        
+        # Remove the tag from spoken response
+        full_response = re.sub(r"\[VIDEO:.*?\]", "", full_response).strip()
+    elif "[VIDEO]" in full_response: # Handle legacy simple tag just in case
+        video_id = search_youtube_kids(user_text)
+        if not video_id: video_id = random.choice(SAFE_VIDEOS)
         full_response = full_response.replace("[VIDEO]", "").strip()
 
     # 2. Process
