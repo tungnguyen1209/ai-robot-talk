@@ -10,7 +10,7 @@ class Mouth:
         pygame.mixer.init()
 
     async def _generate_audio(self, text):
-        communicate = edge_tts.Communicate(text, self.language)
+        communicate = edge_tts.Communicate(text, self.language, rate="+0%")
         await communicate.save(self.output_file)
 
     def say(self, text):

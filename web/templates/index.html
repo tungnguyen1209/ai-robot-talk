@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sumo Robot</title>
+    <title>Sumo Robot 🤖</title>
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
 </head>
@@ -12,21 +12,27 @@
 <body>
     <div class="container">
         <h1>Sumo Robot 🤖</h1>
+
         <div class="robot-face" id="robotFace">
             <div class="eye left"></div>
             <div class="eye right"></div>
             <div class="mouth"></div>
         </div>
+
         <div class="status-box">
             <p id="status">Sẵn sàng trò chuyện!</p>
         </div>
+
         <div class="chat-box" id="chatBox">
-            <!-- Chat history -->
+            <div class="message-row robot">
+                <div class="chat-bubble">Xin chào! Mình là Sumo. Bạn muốn nói chuyện gì nào?</div>
+            </div>
         </div>
+
         <div class="input-group">
-            <button id="micBtn" onclick="toggleMic()" style="background-color: #4CAF50; width: 50px;">🎤</button>
+            <button id="micBtn" onclick="toggleMic()" title="Nói">🎤</button>
             <input type="text" id="userInput" placeholder="Nhập tin nhắn..." autocomplete="off">
-            <button onclick="sendMessage()">Gửi</button>
+            <button class="send-btn" onclick="sendMessage()" title="Gửi">➤</button>
         </div>
     </div>
 
@@ -50,25 +56,30 @@
 
             recognition.onstart = () => {
                 isListening = true;
-                statusText.innerText = "Đang nghe...";
-                micBtn.style.backgroundColor = "#ff4444"; // Red when recording
-                robotFace.classList.add('surprised'); // Open mouth listening
+                statusText.innerText = "Đang nghe bạn nói...";
+                micBtn.classList.add('recording');
+                robotFace.classList.add('surprised');
             };
 
             recognition.onend = () => {
                 isListening = false;
-                micBtn.style.backgroundColor = "#4CAF50";
+                micBtn.classList.remove('recording');
                 robotFace.classList.remove('surprised');
             };
 
             recognition.onresult = (event) => {
                 const text = event.results[0][0].transcript;
                 userInput.value = text;
-                sendMessage(); // Auto send when silence detected
+                sendMessage(); // Auto send
             };
+
+            recognition.onerror = (event) => {
+                console.warn("Speech recognition error", event.error);
+                isListening = false;
+                micBtn.classList.remove('recording');
+            }
         } else {
-            micBtn.style.display = 'none'; // Hide if not supported
-            alert("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói.");
+            micBtn.style.display = 'none';
         }
 
         function toggleMic() {
@@ -76,8 +87,25 @@
             if (isListening) {
                 recognition.stop();
             } else {
-                recognition.start();
+                try {
+                    recognition.start();
+                } catch (e) {
+                    console.error(e);
+                }
             }
+        }
+
+        function addMessage(sender, text) {
+            const row = document.createElement('div');
+            row.className = `message-row ${sender}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble';
+            bubble.innerText = text;
+
+            row.appendChild(bubble);
+            chatBox.appendChild(row);
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         async function sendMessage() {
@@ -90,13 +118,18 @@
             userInput.disabled = true;
             statusText.innerText = "Sumo đang suy nghĩ...";
 
+            // Add loading indicator (optional)
+
             try {
-                // Call API
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: text })
                 });
+
+                if (!response.ok) {
+                    throw new Error("API Network response was not ok");
+                }
 
                 const data = await response.json();
 
@@ -105,51 +138,62 @@
                 setExpression(data.emojis);
 
                 // Play Audio
-                if (data.audio) {
+                if (data.audio_chunks && data.audio_chunks.length > 0) {
+                    playAudioQueue(data.audio_chunks);
+                } else if (data.audio) { // Fallback
                     playAudio(data.audio);
                 }
 
             } catch (error) {
                 console.error("Error:", error);
                 statusText.innerText = "Có lỗi xảy ra!";
+                addMessage('robot', "Xin lỗi, Sumo đang gặp chút sự cố... 😵‍💫");
+                setExpression("😵‍💫");
             } finally {
                 userInput.disabled = false;
                 statusText.innerText = "Sẵn sàng!";
+                userInput.focus();
             }
+        }
+
+        function playAudioQueue(chunks) {
+            if (!chunks || chunks.length === 0) {
+                robotFace.classList.remove('happy');
+                setExpression("");
+                return;
+            }
+
+            const currentChunk = chunks.shift(); // Get first chunk
+            const audio = new Audio("data:audio/mp3;base64," + currentChunk);
+
+            robotFace.classList.add('happy');
+            audio.play().catch(e => console.log("Audio play failed:", e));
+
+            audio.onended = () => {
+                // Play next chunk
+                playAudioQueue(chunks);
+            };
         }
 
         function playAudio(base64Audio) {
             const audio = new Audio("data:audio/mp3;base64," + base64Audio);
-            // Move mouth while playing
             robotFace.classList.add('happy');
-            audio.play();
+            audio.play().catch(e => console.log("Audio play failed:", e));
+
             audio.onended = () => {
                 robotFace.classList.remove('happy');
                 setExpression(""); // Reset
             };
         }
 
-        userInput.addEventListener("keypress", function (event) {
-            if (event.key === "Enter") {
-                sendMessage();
-            }
-        });
-
-        function addMessage(sender, text) {
-            const p = document.createElement('p');
-            p.className = sender;
-            p.innerText = (sender === 'user' ? 'Bạn: ' : 'Sumo: ') + text;
-            chatBox.appendChild(p);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
         function setExpression(exp) {
-            robotFace.className = 'robot-face'; // Reset
+            robotFace.className = 'robot-face'; // Reset base class
             if (!exp) return;
 
+            // Simple mapping
             if (['😀', '😃', '😄', '😁', '😆', '😊', '🥰', '😍'].some(e => exp.includes(e))) {
                 robotFace.classList.add('happy');
-            } else if (['😢', '😭', '😞', '😔', '☹️'].some(e => exp.includes(e))) {
+            } else if (['😢', '😭', '😞', '😔', '☹️', '😿'].some(e => exp.includes(e))) {
                 robotFace.classList.add('sad');
             } else if (['😠', '😡', '🤬', '💢'].some(e => exp.includes(e))) {
                 robotFace.classList.add('angry');
@@ -157,6 +201,12 @@
                 robotFace.classList.add('surprised');
             }
         }
+
+        userInput.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        });
     </script>
 </body>
 
