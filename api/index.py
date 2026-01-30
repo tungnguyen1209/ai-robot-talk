@@ -79,11 +79,26 @@ async def chat_endpoint(request: ChatRequest):
     # 1. Think
     full_response = brain.think(user_text)
     
+    # Check for VIDEO tag
+    SAFE_VIDEOS = [
+        "mMwHgp9vTfw", # Baby Shark
+        "XqZsoesa55w", # Baby Shark Dance
+        "FhqQh3tQq7I", # Kids music
+        "WBOfDl6d8yQ", # ABC Song
+        "71hqRT9U0wg", # Wheels on the Bus
+        "020g-0HHCAU", # Baby Songs
+    ]
+    
+    video_id = None
+    if "[VIDEO]" in full_response:
+        video_id = random.choice(SAFE_VIDEOS)
+        full_response = full_response.replace("[VIDEO]", "").strip()
+
     # 2. Process
     text_to_speak, emojis_found = split_emoji(full_response)
     
     if not text_to_speak:
-        return JSONResponse({"response": full_response, "emojis": emojis_found, "audio_chunks": []})
+        return JSONResponse({"response": full_response, "emojis": emojis_found, "audio_chunks": [], "video_id": video_id})
 
     # 3. Generate Audio using Gemini 2.5 Flash Preview TTS
     audio_chunks = []
@@ -169,5 +184,6 @@ async def chat_endpoint(request: ChatRequest):
     return JSONResponse({
         "response": full_response,
         "emojis": emojis_found,
-        "audio_chunks": audio_chunks
+        "audio_chunks": audio_chunks,
+        "video_id": video_id
     })

@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sumo Robot 🤖</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
     <style>
         #start-overlay {
             position: fixed;
@@ -64,6 +66,19 @@
             <div class="mouth"></div>
         </div>
 
+        <div id="tv-frame" class="hidden">
+            <button class="close-tv" onclick="closeTV()">✖</button>
+            <div class="tv-screen">
+                <iframe id="youtube-player" width="100%" height="100%" src="" frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen></iframe>
+            </div>
+            <div class="tv-legs">
+                <div class="leg left"></div>
+                <div class="leg right"></div>
+            </div>
+        </div>
+
         <div class="status-box">
             <p id="status">Sẵn sàng trò chuyện!</p>
         </div>
@@ -75,6 +90,7 @@
         <div class="input-group">
             <button id="micBtn" onclick="toggleMic()" title="Nói">🎤</button>
             <input type="text" id="userInput" placeholder="Nhập tin nhắn..." autocomplete="off">
+            <button class="tv-btn" onclick="showVideo('mMwHgp9vTfw')" title="Xem hoạt hình (Demo)">📺</button>
             <button class="send-btn" onclick="handleInput()" title="Gửi">➤</button>
         </div>
     </div>
@@ -94,8 +110,10 @@
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
             recognition.lang = 'vi-VN';
-            recognition.continuous = false;
-            recognition.interimResults = false;
+            recognition.continuous = true; // Changed to partial/continuous for smoothness
+            recognition.interimResults = true; // Show results in real-time
+
+            let silenceTimer = null;
 
             recognition.onstart = () => {
                 isListening = true;
@@ -105,20 +123,47 @@
             };
 
             recognition.onend = () => {
+                // Determine if we should restart listening or stop based on logic
+                // For now, let's keep it simple: stop unless in constant listen mode
                 isListening = false;
                 micBtn.classList.remove('recording');
                 robotFace.classList.remove('surprised');
             };
 
             recognition.onresult = (event) => {
-                const text = event.results[0][0].transcript;
-                sendMessage(text); // Auto send
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+
+                // Show raw input
+                const currentText = finalTranscript || interimTranscript;
+                if (currentText) {
+                    userInput.value = currentText;
+
+                    // Reset Silence Timer
+                    clearTimeout(silenceTimer);
+                    silenceTimer = setTimeout(() => {
+                        if (userInput.value.trim()) {
+                            recognition.stop();
+                            sendMessage(userInput.value.trim());
+                        }
+                    }, 1500); // Wait 1.5s silence before sending
+                }
             };
 
             recognition.onerror = (event) => {
                 console.warn("Speech recognition error", event.error);
-                isListening = false;
-                micBtn.classList.remove('recording');
+                if (event.error !== 'no-speech') {
+                    isListening = false;
+                    micBtn.classList.remove('recording');
+                }
             }
         } else {
             micBtn.style.display = 'none';
@@ -195,6 +240,11 @@
                 addMessage('robot', data.response);
                 setExpression(data.emojis);
 
+                // Auto Play Video if requested
+                if (data.video_id) {
+                    showVideo(data.video_id);
+                }
+
                 // Play Audio
                 if (data.audio_chunks && data.audio_chunks.length > 0) {
                     playAudioQueue(data.audio_chunks);
@@ -258,6 +308,20 @@
             } else if (['😮', '😯', '😲', '🙀'].some(e => exp.includes(e))) {
                 robotFace.classList.add('surprised');
             }
+        }
+
+        function showVideo(videoId) {
+            const tvFrame = document.getElementById('tv-frame');
+            const player = document.getElementById('youtube-player');
+            player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+            tvFrame.classList.remove('hidden');
+        }
+
+        function closeTV() {
+            const tvFrame = document.getElementById('tv-frame');
+            const player = document.getElementById('youtube-player');
+            player.src = ""; // Stop video
+            tvFrame.classList.add('hidden');
         }
 
         userInput.addEventListener("keypress", function (event) {

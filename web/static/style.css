@@ -1,21 +1,23 @@
 :root {
-    --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
-    --container-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --robot-color: #ff2e63;
-    --face-color: #fce4ec;
-    --eye-color: #252a34;
-    --highlight-color: #08d9d6;
-    --text-color: #ffffff;
-    --user-msg-bg: #08d9d6;
-    --robot-msg-bg: #ff2e63;
+    --bg-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    --container-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --robot-base: #ffffff;
+    --screen-bg: #1a1a2e;
+    --eye-color: #00d2ff;
+    --mouth-color: #00d2ff;
+    --highlight: #ff007a;
+    --text-color: #333;
+    --user-msg-bg: #d1f7ff;
+    --robot-msg-bg: #ffe0ef;
 }
 
 body {
     background: var(--bg-gradient);
     background-size: 400% 400%;
     animation: gradientBG 15s ease infinite;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Outfit', 'Fredoka', sans-serif;
+    /* Friendly font */
     color: var(--text-color);
     display: flex;
     justify-content: center;
@@ -41,62 +43,140 @@ body {
 
 .container {
     text-align: center;
-    width: 600px;
+    width: 900px;
+    /* Much Wider */
     padding: 30px;
     background: var(--container-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 24px;
-    border: 1px solid var(--glass-border);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 50px;
+    border: 3px solid white;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
-    height: 85vh;
+    height: 90vh;
+    /* Taller */
+    position: relative;
+    overflow: hidden;
 }
 
 h1 {
-    font-weight: 700;
-    margin-bottom: 20px;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-    letter-spacing: 1px;
+    font-weight: 800;
+    margin-bottom: 10px;
+    /* Reduced margin */
+    color: #ff5e9a;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 2rem;
+    text-shadow: 2px 2px 0px white;
+    z-index: 20;
 }
 
-/* Robot Face */
+/* --- ROBOT DESIGN (NgaVi Style / Cute Tech) --- */
 .robot-face {
-    width: 180px;
+    width: 220px;
     height: 180px;
-    background-color: var(--face-color);
-    border-radius: 45px;
+    background-color: var(--robot-base);
+    border-radius: 60px 60px 50px 50px;
     position: relative;
-    margin: 0 auto 20px;
-    box-shadow: 0 0 30px rgba(255, 46, 99, 0.4);
-    animation: float 6s ease-in-out infinite;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin: 50px auto 60px;
+    /* Adjusted for scale */
+    transform: scale(1.6);
+    /* BIGGER FACE */
+    box-shadow:
+        inset -10px -10px 20px rgba(0, 0, 0, 0.05),
+        inset 10px 10px 20px rgba(255, 255, 255, 0.8),
+        0 8px 0 #e0e0e0;
+    animation: float 4s ease-in-out infinite;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 10;
+}
+
+/* Glossy Screen / Faceplate */
+.robot-face::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 25px;
+    background: var(--screen-bg);
+    border-radius: 40px 40px 35px 35px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+    z-index: 0;
+}
+
+/* Antenna / Ears */
+.robot-face::after {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    background: var(--highlight);
+    border-radius: 50%;
+    z-index: -1;
+    box-shadow: 0 0 15px var(--highlight);
+    animation: pulseAntenna 2s infinite;
+}
+
+@keyframes pulseAntenna {
+    0% {
+        transform: translateX(-50%) scale(1);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: translateX(-50%) scale(1.1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(-50%) scale(1);
+        opacity: 0.8;
+    }
 }
 
 @keyframes float {
     0% {
-        transform: translateY(0px);
+        transform: translateY(0px) rotate(0deg);
     }
 
     50% {
-        transform: translateY(-10px);
+        transform: translateY(-12px) rotate(1deg);
     }
 
     100% {
-        transform: translateY(0px);
+        transform: translateY(0px) rotate(0deg);
     }
 }
 
 .eye {
-    width: 32px;
-    height: 42px;
+    width: 45px;
+    height: 55px;
     background-color: var(--eye-color);
     border-radius: 50%;
     position: absolute;
-    top: 60px;
+    top: 55px;
+    z-index: 2;
+    box-shadow: 0 0 20px var(--eye-color);
     transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     animation: blink 4s infinite;
+}
+
+/* Eye Highlights (Reflection) */
+.eye::after {
+    content: '';
+    width: 15px;
+    height: 15px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    opacity: 0.8;
 }
 
 @keyframes blink {
@@ -113,22 +193,24 @@ h1 {
 }
 
 .eye.left {
-    left: 45px;
+    left: 55px;
 }
 
 .eye.right {
-    right: 45px;
+    right: 55px;
 }
 
 .mouth {
-    width: 50px;
-    height: 10px;
-    background-color: var(--eye-color);
+    width: 40px;
+    height: 8px;
+    background-color: var(--mouth-color);
     border-radius: 10px;
     position: absolute;
     bottom: 50px;
-    left: 65px;
+    left: 90px;
+    z-index: 2;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 10px var(--mouth-color);
 }
 
 /* Expressions */
@@ -138,9 +220,9 @@ h1 {
 }
 
 .robot-face.happy .eye {
-    height: 15px;
-    top: 70px;
-    /* Squint */
+    height: 25px;
+    top: 65px;
+    /* Funny squint */
 }
 
 .robot-face.sad .mouth {
@@ -151,153 +233,125 @@ h1 {
 
 .robot-face.sad .eye {
     transform: rotate(20deg);
+    background-color: #5d5dff;
 }
 
 .robot-face.surprised .mouth {
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    left: 75px;
+    left: 95px;
+}
+
+.robot-face.surprised .eye {
+    width: 50px;
+    height: 60px;
+    top: 50px;
 }
 
 .robot-face.angry .eye.left {
-    transform: rotate(20deg);
+    transform: rotate(15deg);
 }
 
 .robot-face.angry .eye.right {
-    transform: rotate(-20deg);
+    transform: rotate(-15deg);
 }
 
 .robot-face.angry .mouth {
-    width: 40px;
-    left: 70px;
+    width: 50px;
+    left: 85px;
 }
+
 
 /* Status Box */
 .status-box {
-    margin-bottom: 20px;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.7);
-    font-style: italic;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    color: #666;
+    font-weight: 500;
     min-height: 20px;
+    padding: 5px 15px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    align-self: center;
 }
 
-/* Chat Box */
+/* Chat Box - Compact */
 .chat-box {
     flex: 1;
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 16px;
-    padding: 20px;
+    background-color: rgba(240, 240, 255, 0.6);
+    border-radius: 25px;
+    padding: 15px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-bottom: 20px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-}
-
-.chat-box::-webkit-scrollbar {
-    width: 6px;
-}
-
-.chat-box::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
-}
-
-.message-row {
-    display: flex;
-    width: 100%;
-}
-
-.message-row.user {
-    justify-content: flex-end;
-}
-
-.message-row.robot {
-    justify-content: flex-start;
+    gap: 10px;
+    margin-bottom: 15px;
+    border: 1px solid white;
 }
 
 .chat-bubble {
-    max-width: 75%;
-    padding: 12px 16px;
-    border-radius: 18px;
+    max-width: 85%;
+    padding: 10px 15px;
+    border-radius: 20px;
     font-size: 0.95rem;
     line-height: 1.4;
     position: relative;
-    animation: fadeIn 0.3s ease-out;
-    word-wrap: break-word;
-    /* Ensure long words break */
-    white-space: pre-wrap;
-    /* Preserve whitespace logic effectively */
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .user .chat-bubble {
     background: var(--user-msg-bg);
-    color: #1a1a2e;
-    border-bottom-right-radius: 4px;
-    box-shadow: 0 4px 15px rgba(8, 217, 214, 0.2);
+    color: #005f73;
+    border-bottom-right-radius: 5px;
+    align-self: flex-end;
 }
 
 .robot .chat-bubble {
     background: var(--robot-msg-bg);
-    color: white;
-    border-bottom-left-radius: 4px;
-    box-shadow: 0 4px 15px rgba(255, 46, 99, 0.3);
+    color: #880e4f;
+    border-bottom-left-radius: 5px;
+    align-self: flex-start;
 }
 
 /* Input Group */
 .input-group {
     display: flex;
-    gap: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 8px;
+    gap: 8px;
+    background: white;
+    padding: 6px;
     border-radius: 50px;
-    /* Pill shape */
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eee;
 }
 
 .input-group input {
     flex: 1;
-    background: transparent;
     border: none;
-    color: white;
-    padding: 10px 15px;
-    font-family: inherit;
+    color: #444;
+    padding: 8px 15px;
     font-size: 1rem;
     outline: none;
+    background: transparent;
 }
 
 .input-group input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: #aaa;
 }
 
 .input-group button {
     border: none;
     border-radius: 50%;
-    width: 45px;
-    height: 45px;
+    width: 42px;
+    height: 42px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 1.1rem;
+    transition: all 0.2s;
+    font-size: 1.2rem;
     color: white;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .input-group button:hover {
@@ -309,29 +363,127 @@ h1 {
 }
 
 #micBtn {
-    background: #00b894;
-    /* Green */
+    background: #32d296;
 }
 
 #micBtn.recording {
-    background: #ff7675;
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(255, 118, 117, 0.7);
-    }
-
-    70% {
-        box-shadow: 0 0 0 10px rgba(255, 118, 117, 0);
-    }
-
-    100% {
-        box-shadow: 0 0 0 0 rgba(255, 118, 117, 0);
-    }
+    background: #ff4757;
+    animation: pulse 1s infinite;
 }
 
 .send-btn {
-    background: var(--robot-color);
+    background: #00d2ff;
+}
+
+/* Overlay styles (copied here so they match the theme) */
+#start-overlay {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%) !important;
+}
+
+#start-btn {
+    background: #ff007a !important;
+    box-shadow: 0 5px 20px rgba(255, 0, 122, 0.4) !important;
+    font-weight: 800 !important;
+    font-size: 1.8rem !important;
+    border: 4px solid white !important;
+}
+
+/* TV FRAME STYLES */
+#tv-frame {
+    width: 60%;
+    max-width: 500px;
+    margin: 0 auto 20px;
+    position: absolute;
+    /* Float over chat */
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffaa5b;
+    padding: 15px;
+    border-radius: 20px;
+    box-shadow: 0 10px 0 #d9802e, 0 20px 20px rgba(0, 0, 0, 0.1);
+    transform-origin: top;
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 100;
+}
+
+#tv-frame.hidden {
+    display: none;
+}
+
+@keyframes popIn {
+    from {
+        transform: translateX(-50%) scale(0);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
+    }
+}
+
+.tv-screen {
+    background: black;
+    border-radius: 10px;
+    overflow: hidden;
+    aspect-ratio: 16/9;
+    width: 100%;
+    border: 4px solid white;
+}
+
+.close-tv {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    background: #ff4757;
+    color: white;
+    border: 3px solid white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 0 #c0392b;
+    z-index: 101;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.close-tv:hover {
+    transform: scale(1.1);
+}
+
+.close-tv:active {
+    transform: scale(0.9);
+    box-shadow: 0 2px 0 #c0392b;
+    top: -13px;
+}
+
+.tv-legs {
+    position: absolute;
+    bottom: -20px;
+    left: 20px;
+    right: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.tv-legs .leg {
+    width: 20px;
+    height: 30px;
+    background: #d9802e;
+    transform: rotate(15deg);
+    border-radius: 0 0 10px 10px;
+}
+
+.tv-legs .leg.right {
+    transform: rotate(-15deg);
+}
+
+.tv-btn {
+    background: #ffa502 !important;
 }
