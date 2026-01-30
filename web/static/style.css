@@ -390,66 +390,71 @@ h1 {
 
 /* TV FRAME STYLES */
 #tv-frame {
-    width: 60%;
-    max-width: 500px;
-    margin: 0 auto 20px;
-    position: absolute;
-    /* Float over chat */
-    top: 100px;
+    width: 1300px;
+    /* CINEMA MODE */
+    max-width: 95vw;
+    margin: 0;
+    position: fixed;
+    /* Fixed to viewport */
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     background: #ffaa5b;
-    padding: 15px;
-    border-radius: 20px;
-    box-shadow: 0 10px 0 #d9802e, 0 20px 20px rgba(0, 0, 0, 0.1);
-    transform-origin: top;
-    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 100;
+    padding: 25px;
+    border-radius: 35px;
+    box-shadow: 0 15px 0 #d9802e, 0 50px 100px rgba(0, 0, 0, 0.5);
+    transform-origin: center;
+    animation: popInBig 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1000;
+    /* Top most */
 }
 
 #tv-frame.hidden {
     display: none;
 }
 
-@keyframes popIn {
+@keyframes popInBig {
     from {
-        transform: translateX(-50%) scale(0);
+        transform: translate(-50%, -50%) scale(0);
         opacity: 0;
     }
 
     to {
-        transform: translateX(-50%) scale(1);
+        transform: translate(-50%, -50%) scale(1);
         opacity: 1;
     }
 }
 
 .tv-screen {
     background: black;
-    border-radius: 10px;
+    border-radius: 20px;
     overflow: hidden;
     aspect-ratio: 16/9;
     width: 100%;
-    border: 4px solid white;
+    border: 5px solid white;
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8);
 }
 
 .close-tv {
     position: absolute;
-    top: -15px;
-    right: -15px;
+    top: -25px;
+    right: -25px;
     background: #ff4757;
     color: white;
-    border: 3px solid white;
-    width: 35px;
-    height: 35px;
+    border: 4px solid white;
+    width: 60px;
+    /* Bigger button */
+    height: 60px;
     border-radius: 50%;
     cursor: pointer;
     font-weight: bold;
-    box-shadow: 0 4px 0 #c0392b;
+    box-shadow: 0 6px 0 #c0392b;
     z-index: 101;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: transform 0.2s;
+    font-size: 1.5rem;
 }
 
 .close-tv:hover {

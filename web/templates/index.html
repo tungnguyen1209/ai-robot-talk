@@ -57,6 +57,19 @@
         <button id="start-btn" onclick="startApp()">👋 Bắt đầu trò chuyện</button>
     </div>
 
+    <div id="tv-frame" class="hidden">
+        <button class="close-tv" onclick="closeTV()">✖</button>
+        <div class="tv-screen">
+            <iframe id="youtube-player" width="100%" height="100%" src="" frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen></iframe>
+        </div>
+        <div class="tv-legs">
+            <div class="leg left"></div>
+            <div class="leg right"></div>
+        </div>
+    </div>
+
     <div class="container">
         <h1>Sumo Robot 🤖</h1>
 
@@ -64,19 +77,6 @@
             <div class="eye left"></div>
             <div class="eye right"></div>
             <div class="mouth"></div>
-        </div>
-
-        <div id="tv-frame" class="hidden">
-            <button class="close-tv" onclick="closeTV()">✖</button>
-            <div class="tv-screen">
-                <iframe id="youtube-player" width="100%" height="100%" src="" frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen></iframe>
-            </div>
-            <div class="tv-legs">
-                <div class="leg left"></div>
-                <div class="leg right"></div>
-            </div>
         </div>
 
         <div class="status-box">
