@@ -1,335 +1,95 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sumo Robot 🤖</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600&family=Outfit:wght@400;700&display=swap"
-        rel="stylesheet">
+    <title>Sumo - Robot của bé</title>
     <style>
-        #start-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(26, 26, 46, 0.95);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-            transition: opacity 0.5s;
-        }
-
-        #start-btn {
-            padding: 15px 40px;
-            font-size: 1.5rem;
-            background: #e94560;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            font-family: 'Outfit', sans-serif;
-            font-weight: 700;
-            box-shadow: 0 0 20px rgba(233, 69, 96, 0.6);
-            transition: transform 0.2s;
-        }
-
-        #start-btn:hover {
-            transform: scale(1.1);
-        }
+        body { background: #ffebf1; font-family: 'Arial Rounded MT Bold', sans-serif; text-align: center; padding: 20px; color: #ff5e9c; }
+        #sumo-container { background: white; padding: 40px; border-radius: 40px; box-shadow: 0 10px 30px rgba(255,100,150,0.2); max-width: 500px; margin: 0 auto; border: 4px solid #ff5e9c; }
+        #avatar { font-size: 80px; margin-bottom: 20px; transition: 0.3s; }
+        .speaking { animation: bounce 0.5s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        button { background: #ff5e9c; color: white; border: none; padding: 15px 30px; font-size: 20px; border-radius: 50px; cursor: pointer; margin: 10px; transition: 0.2s; box-shadow: 0 5px #d83d7a; }
+        button:active { transform: translateY(5px); box-shadow: 0 0; }
+        #response-box { font-size: 24px; margin: 30px 0; min-height: 80px; line-height: 1.5; }
+        input { padding: 10px; border-radius: 20px; border: 2px solid #ffb3d1; width: 70%; margin-bottom: 10px; font-size: 18px; outline: none; }
     </style>
 </head>
-
 <body>
-    <!-- Start Overlay for Autoplay Policy -->
-    <div id="start-overlay">
-        <div class="robot-face" style="transform: scale(0.8); margin-bottom: 20px;">
-            <div class="eye left"></div>
-            <div class="eye right"></div>
-            <div class="mouth" style="height: 10px; border-radius: 10px;"></div>
-        </div>
-        <button id="start-btn" onclick="startApp()">👋 Bắt đầu trò chuyện</button>
-    </div>
-
-    <div id="tv-frame" class="hidden">
-        <button class="close-tv" onclick="closeTV()">✖</button>
-        <div class="tv-screen">
-            <iframe id="youtube-player" width="100%" height="100%" src="" frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen></iframe>
-        </div>
-        <div class="tv-legs">
-            <div class="leg left"></div>
-            <div class="leg right"></div>
-        </div>
-    </div>
-
-    <div class="container">
-        <h1>Sumo Robot 🤖</h1>
-
-        <div class="robot-face" id="robotFace">
-            <div class="eye left"></div>
-            <div class="eye right"></div>
-            <div class="mouth"></div>
-        </div>
-
-        <div class="status-box">
-            <p id="status">Sẵn sàng trò chuyện!</p>
-        </div>
-
-        <div class="chat-box" id="chatBox">
-            <!-- Chat history -->
-        </div>
-
-        <div class="input-group">
-            <button id="micBtn" onclick="toggleMic()" title="Nói">🎤</button>
-            <input type="text" id="userInput" placeholder="Nhập tin nhắn..." autocomplete="off">
-            <button class="tv-btn" onclick="showVideo('mMwHgp9vTfw')" title="Xem hoạt hình (Demo)">📺</button>
-            <button class="send-btn" onclick="handleInput()" title="Gửi">➤</button>
-        </div>
+    <div id="sumo-container">
+        <div id="avatar">🤖</div>
+        <h1>Sumo - Bạn thân của bé</h1>
+        <div id="response-box">Nhấn nút Micro và nói "Chào Sumo" đi nào!</div>
+        
+        <form id="ask-form">
+            <input type="text" id="user-input" placeholder="Bé muốn nói gì với Sumo?" />
+            <br>
+            <button type="submit" id="send-btn">Gửi lời nhắn</button>
+            <button type="button" id="mic-btn">🎙️ Micro (Nói ngay)</button>
+        </form>
     </div>
 
     <script>
-        const robotFace = document.getElementById('robotFace');
-        const statusText = document.getElementById('status');
-        const chatBox = document.getElementById('chatBox');
-        const userInput = document.getElementById('userInput');
-        const micBtn = document.getElementById('micBtn');
+        const avatar = document.getElementById('avatar');
+        const responseBox = document.getElementById('response-box');
+        const askForm = document.getElementById('ask-form');
+        const userInput = document.getElementById('user-input');
 
-        // Setup Speech Recognition
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition = null;
-        let isListening = false;
-
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.lang = 'vi-VN';
-            recognition.continuous = true; // Changed to partial/continuous for smoothness
-            recognition.interimResults = true; // Show results in real-time
-
-            let silenceTimer = null;
-
-            recognition.onstart = () => {
-                isListening = true;
-                statusText.innerText = "Đang nghe bạn nói...";
-                micBtn.classList.add('recording');
-                robotFace.classList.add('surprised');
-            };
-
-            recognition.onend = () => {
-                // Determine if we should restart listening or stop based on logic
-                // For now, let's keep it simple: stop unless in constant listen mode
-                isListening = false;
-                micBtn.classList.remove('recording');
-                robotFace.classList.remove('surprised');
-            };
-
-            recognition.onresult = (event) => {
-                let interimTranscript = '';
-                let finalTranscript = '';
-
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    } else {
-                        interimTranscript += event.results[i][0].transcript;
-                    }
-                }
-
-                // Show raw input
-                const currentText = finalTranscript || interimTranscript;
-                if (currentText) {
-                    userInput.value = currentText;
-
-                    // Reset Silence Timer
-                    clearTimeout(silenceTimer);
-                    silenceTimer = setTimeout(() => {
-                        if (userInput.value.trim()) {
-                            recognition.stop();
-                            sendMessage(userInput.value.trim());
-                        }
-                    }, 1500); // Wait 1.5s silence before sending
-                }
-            };
-
-            recognition.onerror = (event) => {
-                console.warn("Speech recognition error", event.error);
-                if (event.error !== 'no-speech') {
-                    isListening = false;
-                    micBtn.classList.remove('recording');
-                }
-            }
-        } else {
-            micBtn.style.display = 'none';
-        }
-
-        function startApp() {
-            const overlay = document.getElementById('start-overlay');
-            overlay.style.opacity = '0';
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                // Trigger welcome greeting (hidden from user chat)
-                sendMessage("Xin chào Sumo, em hãy giới thiệu bản thân ngắn gọn với các bạn nhỏ nhé!", false);
-            }, 500);
-        }
-
-        function toggleMic() {
-            if (!recognition) return;
-            if (isListening) {
-                recognition.stop();
-            } else {
-                try {
-                    recognition.start();
-                } catch (e) {
-                    console.error(e);
-                }
-            }
-        }
-
-        function addMessage(sender, text) {
-            const row = document.createElement('div');
-            row.className = `message-row ${sender}`;
-
-            const bubble = document.createElement('div');
-            bubble.className = 'chat-bubble';
-            bubble.innerText = text;
-
-            row.appendChild(bubble);
-            chatBox.appendChild(row);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        function handleInput() {
-            const text = userInput.value.trim();
-            if (text) sendMessage(text);
-        }
-
-        async function sendMessage(textInput = null, showUserMessage = true) {
-            const text = textInput || userInput.value.trim();
-            if (!text) return;
-
-            // UI Update
-            if (showUserMessage) {
-                addMessage('user', text);
-                userInput.value = "";
-            }
-
-            userInput.disabled = true;
-            statusText.innerText = "Sumo đang suy nghĩ...";
-
+        // Hàm xử lý gửi tin nhắn
+        async function sendMessage(text) {
+            responseBox.innerText = "Sumo đang suy nghĩ... 🤔";
+            avatar.innerText = "🤔";
+            
             try {
-                const response = await fetch('/api/chat', {
+                const res = await fetch('/ask', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: text })
+                    body: JSON.stringify({ text: text })
                 });
-
-                if (!response.ok) {
-                    throw new Error("API Network response was not ok");
+                const data = await res.json();
+                
+                // Hiển thị câu trả lời
+                responseBox.innerText = data.response;
+                avatar.innerText = "🤖";
+                avatar.classList.add('speaking');
+                
+                // Phát âm thanh
+                if (data.audio) {
+                    const audio = new Audio("data:audio/mp3;base64," + data.audio);
+                    audio.play();
+                    audio.onended = () => avatar.classList.remove('speaking');
                 }
-
-                const data = await response.json();
-
-                // Process Response
-                addMessage('robot', data.response);
-                setExpression(data.emojis);
-
-                // Auto Play Video if requested
-                if (data.video_id) {
-                    showVideo(data.video_id);
-                }
-
-                // Play Audio
-                if (data.audio_chunks && data.audio_chunks.length > 0) {
-                    playAudioQueue(data.audio_chunks);
-                } else if (data.audio) { // Fallback
-                    playAudio(data.audio);
-                }
-
-            } catch (error) {
-                console.error("Error:", error);
-                statusText.innerText = "Có lỗi xảy ra!";
-                addMessage('robot', "Xin lỗi, Sumo đang gặp chút sự cố... 😵‍💫");
-                setExpression("😵‍💫");
-            } finally {
-                userInput.disabled = false;
-                statusText.innerText = "Sẵn sàng!";
-                if (showUserMessage) userInput.focus();
+            } catch (err) {
+                responseBox.innerText = "Ôi, Sumo bị đau họng rồi!";
             }
         }
 
-        function playAudioQueue(chunks) {
-            if (!chunks || chunks.length === 0) {
-                robotFace.classList.remove('happy');
-                setExpression("");
-                return;
+        askForm.onsubmit = (e) => {
+            e.preventDefault();
+            const text = userInput.value;
+            if (text) {
+                sendMessage(text);
+                userInput.value = "";
             }
+        };
 
-            const currentChunk = chunks.shift(); // Get first chunk
-            const audio = new Audio("data:audio/mp3;base64," + currentChunk);
+        // Nhận diện giọng nói cơ bản (Web Speech API)
+        const micBtn = document.getElementById('mic-btn');
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'vi-VN';
 
-            robotFace.classList.add('happy');
-            audio.play().catch(e => console.log("Audio play failed:", e));
+        micBtn.onclick = () => {
+            recognition.start();
+            micBtn.innerText = "Sumo đang nghe... 👂";
+        };
 
-            audio.onended = () => {
-                // Play next chunk
-                playAudioQueue(chunks);
-            };
-        }
-
-        function playAudio(base64Audio) {
-            const audio = new Audio("data:audio/mp3;base64," + base64Audio);
-            robotFace.classList.add('happy');
-            audio.play().catch(e => console.log("Audio play failed:", e));
-
-            audio.onended = () => {
-                robotFace.classList.remove('happy');
-                setExpression(""); // Reset
-            };
-        }
-
-        function setExpression(exp) {
-            robotFace.className = 'robot-face'; // Reset base class
-            if (!exp) return;
-
-            // Simple mapping
-            if (['😀', '😃', '😄', '😁', '😆', '😊', '🥰', '😍'].some(e => exp.includes(e))) {
-                robotFace.classList.add('happy');
-            } else if (['😢', '😭', '😞', '😔', '☹️', '😿'].some(e => exp.includes(e))) {
-                robotFace.classList.add('sad');
-            } else if (['😠', '😡', '🤬', '💢'].some(e => exp.includes(e))) {
-                robotFace.classList.add('angry');
-            } else if (['😮', '😯', '😲', '🙀'].some(e => exp.includes(e))) {
-                robotFace.classList.add('surprised');
-            }
-        }
-
-        function showVideo(videoId) {
-            const tvFrame = document.getElementById('tv-frame');
-            const player = document.getElementById('youtube-player');
-            player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-            tvFrame.classList.remove('hidden');
-        }
-
-        function closeTV() {
-            const tvFrame = document.getElementById('tv-frame');
-            const player = document.getElementById('youtube-player');
-            player.src = ""; // Stop video
-            tvFrame.classList.add('hidden');
-        }
-
-        userInput.addEventListener("keypress", function (event) {
-            if (event.key === "Enter") {
-                handleInput();
-            }
-        });
+        recognition.onresult = (event) => {
+            const speechToText = event.results[0][0].transcript;
+            userInput.value = speechToText;
+            sendMessage(speechToText);
+            micBtn.innerText = "🎙️ Micro (Nói ngay)";
+        };
     </script>
 </body>
-
 </html>

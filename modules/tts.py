@@ -1,44 +1,44 @@
 import asyncio
 import edge_tts
-import pygame
+import base64
 import os
 
 class Mouth:
-    def __init__(self, language='vi-VN-HoaiMyNeural'):
-        self.language = language
+    def __init__(self, voice='vi-VN-HoaiMyNeural'):
+        self.voice = voice
+        # Pitch: +15% (giọng cao, đáng yêu), Rate: +10% (nói nhanh, năng động)
+        self.pitch = "+15Hz"
+        self.rate = "+5%"
         self.output_file = "response.mp3"
-        pygame.mixer.init()
 
-    async def _generate_audio(self, text):
-        communicate = edge_tts.Communicate(text, self.language, rate="+0%")
+    async def _generate_audio_base64(self, text):
+        communicate = edge_tts.Communicate(text, self.voice, pitch=self.pitch, rate=self.rate)
+        # Lưu ra file tạm rồi đọc lại dạng base64 (hoặc stream trực tiếp nếu muốn)
         await communicate.save(self.output_file)
+        
+        with open(self.output_file, "rb") as audio_file:
+            encoded_string = base64.b64encode(audio_file.read()).decode('utf-8')
+            
+        # Dọn dẹp file tạm
+        if os.path.exists(self.output_file):
+            os.remove(self.output_file)
+            
+        return encoded_string
+
+    def get_audio_base64(self, text):
+        """
+        Trả về chuỗi Base64 của âm thanh để trình duyệt tự phát.
+        """
+        if not text:
+            return ""
+        try:
+            return asyncio.run(self._generate_audio_base64(text))
+        except Exception as e:
+            print(f"Lỗi TTS: {e}")
+            return ""
 
     def say(self, text):
         """
-        Chuyển văn bản thành giọng nói và phát ra loa.
+        Dùng cho chế độ chạy local (vẫn giữ nguyên cho Sếp nếu muốn test local).
         """
-        print(f"Robot nói: {text}")
-        if not text:
-            return
-
-        try:
-            # Tạo file âm thanh (cần chạy async trong môi trường sync)
-            asyncio.run(self._generate_audio(text))
-            
-            # Phát âm thanh
-            pygame.mixer.music.load(self.output_file)
-            pygame.mixer.music.play()
-            
-            # Chờ phát xong
-            while pygame.mixer.music.get_busy():
-                pygame.time.Clock().tick(10)
-                
-            # Giải phóng file để có thể ghi đè lần sau
-            pygame.mixer.music.unload()
-            
-        except Exception as e:
-            print(f"Lỗi TTS: {e}")
-
-if __name__ == "__main__":
-    mouth = Mouth()
-    mouth.say("Xin chào, mình là người máy thông minh.")
+        print(f"Sumo nói: {text}")
