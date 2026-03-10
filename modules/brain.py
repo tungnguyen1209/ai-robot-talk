@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Brain:
-    def __init__(self, model_name='gemini-1.5-flash'):
+    def __init__(self, model_name='gemini-2.0-flash'):
         self.model_name = model_name
         # Ưu tiên lấy từ biến môi trường của hệ thống (Vercel)
         self.api_key = os.environ.get("GOOGLE_API_KEY")
